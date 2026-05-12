@@ -36,7 +36,7 @@ A memory provider plugin for [Hermes AI Agent](https://github.com/Hermes-ai/herm
 
 ```bash
 # Clone to Hermes plugins directory
-git clone https://github.com/YOUR_USERNAME/hermes-memos-plugin.git ~/.hermes/plugins/memos
+git clone https://github.com/ZacJinshare/hermes-memos-plugin.git ~/.hermes/plugins/memos
 ```
 
 Or manually copy the `memos/` folder to `~/.hermes/plugins/memos/`.
@@ -134,7 +134,7 @@ Agent: [calls memos_conclude with conclusion "User prefers single quotes in Pyth
 ## Development
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/hermes-memos-plugin.git
+git clone https://github.com/ZacJinshare/hermes-memos-plugin.git
 cd hermes-memos-plugin
 # Edit memos/__init__.py
 # Test by copying to ~/.hermes/plugins/memos/ and restarting Hermes
@@ -184,7 +184,7 @@ MIT License — see [LICENSE](LICENSE)
 
 ```bash
 # 克隆到 Hermes 插件目录
-git clone https://github.com/YOUR_USERNAME/hermes-memos-plugin.git ~/.hermes/plugins/memos
+git clone https://github.com/ZacJinshare/hermes-memos-plugin.git ~/.hermes/plugins/memos
 ```
 
 或手动将 `memos/` 文件夹复制到 `~/.hermes/plugins/memos/`。
