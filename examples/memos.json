@@ -1,0 +1,6 @@
+{
+  "api_key": "your-memos-api-key-here",
+  "base_url": "https://memos.memtensor.cn",
+  "user_id": "hermes-user",
+  "agent_id": "hermes"
+}
