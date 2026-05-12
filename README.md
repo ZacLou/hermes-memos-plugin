@@ -7,39 +7,46 @@
 <a name="english"></a>
 # Hermes MemOS Plugin
 
-A memory provider plugin for [Hermes AI Agent](https://github.com/Hermes-ai/hermes) that integrates [MemOS OpenMem API](https://memos-docs.openmem.net) for persistent, intelligent memory across conversations.
+[![GitHub license](https://img.shields.io/github/license/ZacLou/hermes-memos-plugin)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/ZacLou/hermes-memos-plugin)](https://github.com/ZacLou/hermes-memos-plugin/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/ZacLou/hermes-memos-plugin)](https://github.com/ZacLou/hermes-memos-plugin/network)
 
-## Features
+A **memory provider plugin** for [Hermes AI Agent](https://github.com/Hermes-ai/hermes) that integrates [MemOS OpenMem API](https://memos-docs.openmem.net) to give your agent **persistent, cross-session memory**.
 
-- **Persistent Memory** — Stores conversation facts via MemOS, accessible across sessions
-- **Semantic Search** — Retrieve relevant memories by meaning, not keywords
-- **Automatic Sync** — Background thread syncs conversations to MemOS without blocking
-- **Circuit Breaker** — Graceful degradation when API is unavailable
-- **Zero-config** — Works with just an API key, sensible defaults for everything else
+> Give your Hermes agent the ability to remember who the user is, what they like, and what you've discussed — just like a real assistant.
 
-## Tools Provided
+## ✨ Features
+
+- 🧠 **Persistent Memory** — Facts survive across conversations and restarts
+- 🔍 **Semantic Search** — Retrieve memories by *meaning*, not keywords
+- 🔄 **Auto Sync** — Background thread stores conversations without blocking
+- 🛡️ **Circuit Breaker** — Graceful degradation when MemOS API is down
+- ⚡ **Zero Config** — Works with just an API key
+- 🎯 **Karpathy-Style Code** — Minimal, readable, ~240 lines
+
+## 🛠️ Tools Provided
 
 | Tool | Description |
 |------|-------------|
-| `memos_profile` | Retrieve all stored memories about the user |
-| `memos_search` | Search memories by semantic similarity |
+| `memos_profile` | Load all stored memories (call at conversation start) |
+| `memos_search` | Semantic search over stored memories |
 | `memos_conclude` | Store a specific fact about the user |
 
-## Installation
+## 📦 Installation
 
 ### Prerequisites
 
-- Hermes Agent Gateway installed and running
-- A MemOS API key ([get one here](https://memos-docs.openmem.net))
+- [Hermes Agent Gateway](https://github.com/Hermes-ai/hermes) installed and running
+- A [MemOS API key](https://memos-docs.openmem.net)
 
 ### Install
 
 ```bash
 # Clone to Hermes plugins directory
-git clone https://github.com/ZacJinshare/hermes-memos-plugin.git ~/.hermes/plugins/memos
+git clone https://github.com/ZacLou/hermes-memos-plugin.git ~/.hermes/plugins/memos
 ```
 
-Or manually copy the `memos/` folder to `~/.hermes/plugins/memos/`.
+Or manually copy `memos/` to `~/.hermes/plugins/memos/`.
 
 ### Configure
 
@@ -63,37 +70,37 @@ export MEMOS_USER_ID="hermes-user"
 export MEMOS_AGENT_ID="hermes"
 ```
 
-### Enable in Hermes
+### Enable
 
-Restart the Hermes gateway:
+Restart Hermes:
 
 ```bash
 systemctl --user restart hermes-gateway
 ```
 
-Check logs to confirm the plugin loaded:
+Verify it loaded:
 
 ```bash
-tail -f ~/.hermes/logs/gateway.log | grep -i memos
+grep -i memos ~/.hermes/logs/gateway.log
 ```
 
-## Usage
+## 🚀 Usage
 
-Once installed, the Hermes agent will have access to three new tools:
+Once installed, Hermes automatically gains three new tools:
 
 ### `memos_profile`
 
-Get all stored memories about the user. Call this at conversation start.
+> **When to use:** At the start of a conversation, to load user context.
 
 ```
-User: hi
+User: "Hi there!"
 Agent: [calls memos_profile]
-        "I see we've discussed Python packaging before. Want to continue that?"
+        "Welcome back! I see you prefer Python over JavaScript. Let's continue."
 ```
 
 ### `memos_search`
 
-Search memories by meaning:
+> **When to use:** When you need to recall something the user mentioned before.
 
 ```
 Agent: [calls memos_search with query "user's preferred code style"]
@@ -101,90 +108,92 @@ Agent: [calls memos_search with query "user's preferred code style"]
 
 ### `memos_conclude`
 
-Store an explicit fact:
+> **When to use:** When the user states a preference, correction, or decision.
 
 ```
+User: "Actually, I prefer single quotes in Python."
 Agent: [calls memos_conclude with conclusion "User prefers single quotes in Python"]
 ```
 
-## API Endpoints Used
+## 🔌 API Endpoints Used
 
-| Endpoint | Purpose |
-|----------|---------|
-| `POST /api/openmem/v1/add/message` | Store conversation messages |
-| `POST /api/openmem/v1/search/memory` | Semantic search over memories |
-| `POST /api/openmem/v1/get/memory` | Retrieve all memories |
+| Endpoint | Method | Purpose |
+|----------|---------|---------|
+| `/api/openmem/v1/add/message` | POST | Store conversation messages |
+| `/api/openmem/v1/search/memory` | POST | Semantic search over memories |
+| `/api/openmem/v1/get/memory` | POST | Retrieve all stored memories |
 
-## Troubleshooting
+## 🐛 Troubleshooting
 
 **Plugin not loading:**
 - Check `~/.hermes/plugins/memos/__init__.py` exists
 - Check `~/.hermes/logs/gateway.log` for import errors
 - Verify `requests` is installed: `pip install requests`
 
-**API errors:**
+**API errors / circuit breaker tripped:**
 - Circuit breaker trips after 5 consecutive failures, cools down for 120s
-- Check `/tmp/memos_plugin_debug.log` for detailed debug output
-- Verify `api_key` in `~/.hermes/memos.json`
+- Check MemOS API key in `~/.hermes/memos.json`
+- Test API manually: `curl -H "Authorization: Token YOUR_KEY" https://memos.memtensor.cn/api/openmem/v1/get/memory -d '{"user_id":"test","page":1,"size":1}' -X POST -H "Content-Type: application/json"`
 
-**Debug log not created:**
-- Ensure the plugin module parses correctly (no syntax errors)
-- Run: `python3 -m py_compile ~/.hermes/plugins/memos/__init__.py`
+## 🤝 Contributing
 
-## Development
+PRs welcome! Please:
 
-```bash
-git clone https://github.com/ZacJinshare/hermes-memos-plugin.git
-cd hermes-memos-plugin
-# Edit memos/__init__.py
-# Test by copying to ~/.hermes/plugins/memos/ and restarting Hermes
-```
+1. Follow the [Karpathy Coding Guidelines](https://github.com/ZacLou/hermes-memos-plugin/blob/main/docs/karpathy-guidelines.md)
+2. Keep it simple — no over-engineering
+3. Test with a running Hermes instance before submitting
 
-## License
+## 📄 License
 
-MIT License — see [LICENSE](LICENSE)
+MIT — see [LICENSE](LICENSE)
 
-## Links
+## 🔗 Links
 
 - [Hermes Agent](https://github.com/Hermes-ai/hermes)
 - [MemOS Documentation](https://memos-docs.openmem.net)
-- [OpenMem API Reference](https://memos.memtensor.cn/docs)
+- [OpenMem API](https://memos.memtensor.cn/docs)
 
 ---
 
 <a name="中文"></a>
 # Hermes MemOS 插件
 
-为 [Hermes AI Agent](https://github.com/Hermes-ai/hermes) 提供的记忆提供者插件，集成 [MemOS OpenMem API](https://memos-docs.openmem.net)，实现跨对话的持久化智能记忆。
+[![GitHub license](https://img.shields.io/github/license/ZacLou/hermes-memos-plugin)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/ZacLou/hermes-memos-plugin)](https://github.com/ZacLou/hermes-memos-plugin/stargazers)
 
-## 功能特性
+为 [Hermes AI Agent](https://github.com/Hermes-ai/hermes) 开发的**记忆提供者插件**，集成 [MemOS OpenMem API](https://memos-docs.openmem.net)，赋予你的 Agent **持久化、跨会话的记忆能力**。
 
-- **持久化记忆** — 通过 MemOS 存储对话事实，跨会话访问
-- **语义搜索** — 按语义（而非关键词）检索相关记忆
-- **自动同步** — 后台线程无阻塞同步对话到 MemOS
-- **断路器保护** — API 不可用时优雅降级
-- **零配置启动** — 只需 API 密钥，其余均有合理默认值
+> 让你的 Hermes agent 能够记住用户是谁、喜欢什么、讨论过什么 —— 就像真正的助手一样。
 
-## 提供的工具
+## ✨ 功能特性
+
+- 🧠 **持久化记忆** — 事实存储跨对话、跨重启保留
+- 🔍 **语义搜索** — 按*语义*检索记忆，而非关键词
+- 🔄 **自动同步** — 后台线程无阻塞存储对话
+- 🛡️ **断路器保护** — MemOS API 宕机时优雅降级
+- ⚡ **零配置启动** — 只需 API 密钥
+- 🎯 **Karpathy 风格代码** — 简洁、可读、约 240 行
+
+## 🛠️ 提供的工具
 
 | 工具 | 说明 |
 |------|------|
-| `memos_profile` | 获取用户所有已存储记忆 |
-| `memos_search` | 按语义相似度搜索记忆 |
+| `memos_profile` | 加载所有已存储记忆（对话开始时调用） |
+| `memos_search` | 对存储的记忆进行语义搜索 |
 | `memos_conclude` | 存储关于用户的特定事实 |
 
-## 安装
+## 📦 安装
 
 ### 前置条件
 
-- Hermes Agent Gateway 已安装并运行
-- 有效的 MemOS API 密钥（[获取地址](https://memos-docs.openmem.net)）
+- [Hermes Agent Gateway](https://github.com/Hermes-ai/hermes) 已安装并运行
+- 有效的 [MemOS API 密钥](https://memos-docs.openmem.net)
 
 ### 安装步骤
 
 ```bash
 # 克隆到 Hermes 插件目录
-git clone https://github.com/ZacJinshare/hermes-memos-plugin.git ~/.hermes/plugins/memos
+git clone https://github.com/ZacLou/hermes-memos-plugin.git ~/.hermes/plugins/memos
 ```
 
 或手动将 `memos/` 文件夹复制到 `~/.hermes/plugins/memos/`。
@@ -211,54 +220,70 @@ export MEMOS_USER_ID="hermes-user"
 export MEMOS_AGENT_ID="hermes"
 ```
 
-### 在 Hermes 中启用
+### 启用
 
-重启 Hermes 网关：
+重启 Hermes：
 
 ```bash
 systemctl --user restart hermes-gateway
 ```
 
-检查日志确认插件已加载：
+验证插件已加载：
 
 ```bash
-tail -f ~/.hermes/logs/gateway.log | grep -i memos
+grep -i memos ~/.hermes/logs/gateway.log
 ```
 
-## 使用方法
+## 🚀 使用方法
 
-安装后，Hermes agent 将获得三个新工具：
+安装后，Hermes 自动获得三个新工具：
 
 ### `memos_profile`
 
-获取用户所有已存储记忆，建议在对话开始时调用。
+> **使用时机：** 对话开始时，加载用户上下文。
 
 ### `memos_search`
 
-按语义搜索记忆内容。
+> **使用时机：** 需要回忆用户之前提到过的内容时。
 
 ### `memos_conclude`
 
-存储明确的事实（用户偏好、纠正、决策等）。
+> **使用时机：** 用户陈述偏好、纠正或决策时。
 
-## 故障排查
+## 🔌 使用的 API 端点
+
+| 端点 | 方法 | 用途 |
+|------|------|------|
+| `/api/openmem/v1/add/message` | POST | 存储对话消息 |
+| `/api/openmem/v1/search/memory` | POST | 语义搜索记忆 |
+| `/api/openmem/v1/get/memory` | POST | 检索所有已存储记忆 |
+
+## 🐛 故障排查
 
 **插件未加载：**
 - 检查 `~/.hermes/plugins/memos/__init__.py` 是否存在
 - 检查 `~/.hermes/logs/gateway.log` 中的导入错误
 - 确认安装了 `requests`：`pip install requests`
 
-**API 错误：**
+**API 错误 / 断路器触发：**
 - 连续失败 5 次后断路器触发，冷却 120 秒
-- 查看 `/tmp/memos_plugin_debug.log` 获取详细调试输出
-- 验证 `~/.hermes/memos.json` 中的 `api_key` 是否正确
+- 检查 `~/.hermes/memos.json` 中的 MemOS API 密钥
+- 手动测试 API（见英文版）
 
-## 开源协议
+## 🤝 贡献
+
+欢迎 PR！请：
+
+1. 遵循 [Karpathy 编码准则](https://github.com/ZacLou/hermes-memos-plugin/blob/main/docs/karpathy-guidelines.md)
+2. 保持简洁 — 不要过度工程化
+3. 提交前在运行的 Hermes 实例中测试
+
+## 📄 开源协议
 
 MIT License — 详见 [LICENSE](LICENSE)
 
-## 相关链接
+## 🔗 相关链接
 
 - [Hermes Agent](https://github.com/Hermes-ai/hermes)
 - [MemOS 文档](https://memos-docs.openmem.net)
-- [OpenMem API 参考](https://memos.memtensor.cn/docs)
+- [OpenMem API](https://memos.memtensor.cn/docs)
